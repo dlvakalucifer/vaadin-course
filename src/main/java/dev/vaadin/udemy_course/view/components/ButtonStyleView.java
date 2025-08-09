@@ -1,4 +1,4 @@
-package dev.vaadin.udemy_course.views.home;
+package dev.vaadin.udemy_course.view.components;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;

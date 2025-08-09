@@ -1,4 +1,4 @@
-package dev.vaadin.udemy_course.views.home;
+package dev.vaadin.udemy_course.view.home;
 
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
