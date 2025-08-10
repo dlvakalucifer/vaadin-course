@@ -9,6 +9,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.validator.EmailValidator;
 import com.vaadin.flow.router.Route;
 import dev.vaadin.udemy_course.model.Person;
 
@@ -49,6 +50,7 @@ public class PersonView extends VerticalLayout
         var tfMobile = new TextField("Mobile");
         var tfAddress = new TextField("Address");
         var tfEmail = new TextField("Email");
+        tfEmail.setTooltipText("This field is read only since the binder has no behaviour defined for setting information into the bean for this textfield");
         var tfAge = new TextField("Age");
 
         var horizontalLayout = new HorizontalLayout();
@@ -57,11 +59,20 @@ public class PersonView extends VerticalLayout
         var btCancel = new Button("Cancel");
 
         var binder = new Binder<>(Person.class);
-        binder.forField(tfName).bind(Person::getName, Person::setName);
-        binder.forField(tfMobile).bind(Person::getMobile, Person::setMobile);
-        binder.forField(tfAddress).bind(Person::getAddress, Person::setAddress);
-        binder.forField(tfAge).withConverter(new StringToIntegerConverter("not an age")).bind(Person::getAge, Person::setAge);
-        binder.forField(tfEmail).bind(Person::getEmail, Person::setEmail);
+        binder.forField(tfName)
+                .withValidator(name -> name.length() < 6, "The name should not have more characters than 6.")
+                .bind(Person::getName, Person::setName);
+        binder.forField(tfMobile)
+                .asRequired("Mobile ist required")
+                .bind(Person::getMobile, Person::setMobile);
+        // setter: null - triggers read only mode
+        binder.forField(tfAddress).bind(Person::getAddress, null);
+        binder.forField(tfAge)
+                .withConverter(new StringToIntegerConverter("not an age"))
+                .bind(Person::getAge, Person::setAge);
+        binder.forField(tfEmail)
+                .withValidator(new EmailValidator("Email ist invalid", false))
+                .bind(Person::getEmail, Person::setEmail);
 
 
         horizontalLayout.add(btSave, btCancel);
@@ -72,14 +83,18 @@ public class PersonView extends VerticalLayout
 
         binder.readBean(person);
 
-        btSave.addClickListener( e -> {
+        btSave.addClickListener(e ->
+        {
             try
             {
-                binder.writeBean(person);
-                Notification.show(person.toString(), 5000 ,Notification.Position.TOP_CENTER);
+                if (binder.validate().isOk())
+                {
+                    binder.writeBean(person);
+                    Notification.show(person.toString(), 5000, Notification.Position.TOP_CENTER);
+                }
             } catch (ValidationException ex)
             {
-                Notification.show("Save not successful", 5000 ,Notification.Position.TOP_CENTER);
+                Notification.show("Save not successful", 5000, Notification.Position.TOP_CENTER);
             }
         });
     }
